@@ -30,17 +30,26 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     }
   };
 
+  // Calculate minimum width to ensure visibility even for day 1
+  const getProgressWidth = () => {
+    // Show at least 3% progress even on day 1
+    const minWidth = 3;
+    if (daysSince === 0) return 0;
+    // Maximum width is 100%
+    return Math.min(100, Math.max(minWidth, percentComplete));
+  };
+
   useEffect(() => {
     setIsVisible(true);
     
     controls.start({
-      width: `${percentComplete}%`,
+      width: `${getProgressWidth()}%`,
       transition: { 
         duration: 1.5, 
         ease: [0.34, 1.56, 0.64, 1] 
       }
     });
-  }, [percentComplete, controls]);
+  }, [percentComplete, daysSince, controls]);
 
   return (
     <div className="w-full space-y-2">

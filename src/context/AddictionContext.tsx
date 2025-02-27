@@ -12,6 +12,8 @@ interface AddictionContextType {
   percentComplete: number;
   checkAddictionToday: (occurred: boolean) => void;
   hasAddictionToday: boolean;
+  checkedToday: boolean;
+  markNonAddictionForToday: () => void;
 }
 
 const AddictionContext = createContext<AddictionContextType | undefined>(undefined);
@@ -33,18 +35,29 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return saved ? JSON.parse(saved) : false;
   });
 
-  useEffect(() => {
-    // Update the addiction status for today when the component mounts
+  const [checkedToday, setCheckedToday] = useState<boolean>(() => {
     const today = new Date().toISOString().split('T')[0];
-    const saved = localStorage.getItem(`addiction_${today}`);
-    setHasAddictionToday(saved ? JSON.parse(saved) : false);
+    return !!localStorage.getItem(`checked_${today}`);
+  });
+
+  useEffect(() => {
+    // Update addiction status and check status for today on component mount
+    const today = new Date().toISOString().split('T')[0];
+    const savedAddiction = localStorage.getItem(`addiction_${today}`);
+    const savedChecked = localStorage.getItem(`checked_${today}`);
+    
+    setHasAddictionToday(savedAddiction ? JSON.parse(savedAddiction) : false);
+    setCheckedToday(!!savedChecked);
     
     // Check at midnight for a new day
     const checkNewDay = () => {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
-      const saved = localStorage.getItem(`addiction_${today}`);
-      setHasAddictionToday(saved ? JSON.parse(saved) : false);
+      const savedAddiction = localStorage.getItem(`addiction_${today}`);
+      const savedChecked = localStorage.getItem(`checked_${today}`);
+      
+      setHasAddictionToday(savedAddiction ? JSON.parse(savedAddiction) : false);
+      setCheckedToday(!!savedChecked);
     };
     
     // Set up an interval to check for a new day
@@ -91,13 +104,34 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const checkAddictionToday = (occurred: boolean) => {
+    if (checkedToday) return; // Can only check once per day
+    
     const today = new Date().toISOString().split('T')[0];
     localStorage.setItem(`addiction_${today}`, JSON.stringify(occurred));
+    localStorage.setItem(`checked_${today}`, 'true');
+    
     setHasAddictionToday(occurred);
+    setCheckedToday(true);
     
     if (occurred) {
       // Reset the streak since addiction occurred today
       resetProgress();
+    }
+  };
+
+  const markNonAddictionForToday = () => {
+    if (checkedToday) return; // Can only check once per day
+    
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(`addiction_${today}`, JSON.stringify(false));
+    localStorage.setItem(`checked_${today}`, 'true');
+    
+    setHasAddictionToday(false);
+    setCheckedToday(true);
+    
+    // If they haven't started a streak yet, start one now
+    if (!startDate) {
+      setStartDate(new Date());
     }
   };
 
@@ -121,7 +155,9 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         daysSince,
         percentComplete,
         checkAddictionToday,
-        hasAddictionToday
+        hasAddictionToday,
+        checkedToday,
+        markNonAddictionForToday
       }}>
       {children}
     </AddictionContext.Provider>

@@ -13,7 +13,9 @@ const ProgressCard = () => {
     resetProgress, 
     addiction, 
     checkAddictionToday, 
-    hasAddictionToday 
+    hasAddictionToday,
+    checkedToday,
+    markNonAddictionForToday
   } = useAddiction();
 
   // Display text based on addiction type
@@ -31,7 +33,15 @@ const ProgressCard = () => {
   };
 
   const handleCheckboxChange = (checked: boolean) => {
-    checkAddictionToday(checked);
+    if (!checkedToday) {
+      checkAddictionToday(checked);
+    }
+  };
+
+  const handleNonAddictionClick = () => {
+    if (!checkedToday) {
+      markNonAddictionForToday();
+    }
   };
 
   return (
@@ -65,31 +75,55 @@ const ProgressCard = () => {
             </div>
           </div>
 
-          <div className="border-t border-border pt-4 space-y-2">
-            <p className="font-medium">Did you engage in {getAddictionText()} today?</p>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="addiction-today" 
-                checked={hasAddictionToday}
-                onCheckedChange={handleCheckboxChange}
-              />
-              <label 
-                htmlFor="addiction-today"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Yes, I did
-              </label>
+          <div className="border-t border-border pt-4 space-y-4">
+            <p className="font-medium">How did you do today?</p>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="addiction-today" 
+                  checked={hasAddictionToday}
+                  onCheckedChange={handleCheckboxChange}
+                  disabled={checkedToday}
+                />
+                <label 
+                  htmlFor="addiction-today"
+                  className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${checkedToday && !hasAddictionToday ? 'opacity-50' : ''}`}
+                >
+                  Yes, I engaged in {getAddictionText()} today
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="no-addiction-today" 
+                  checked={checkedToday && !hasAddictionToday}
+                  onCheckedChange={() => handleNonAddictionClick()}
+                  disabled={checkedToday}
+                />
+                <label 
+                  htmlFor="no-addiction-today"
+                  className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${checkedToday && hasAddictionToday ? 'opacity-50' : ''}`}
+                >
+                  No, I maintained my streak today
+                </label>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground mt-1">
-              {hasAddictionToday ? (
+            
+            <div className="text-sm mt-2">
+              {!checkedToday ? (
+                <div className="text-muted-foreground">
+                  Record your progress for today
+                </div>
+              ) : hasAddictionToday ? (
                 <div className="flex items-center text-destructive">
                   <X className="h-4 w-4 mr-1" />
-                  Your streak has been reset
+                  Your streak has been reset. Start fresh tomorrow!
                 </div>
               ) : (
                 <div className="flex items-center text-primary">
                   <Check className="h-4 w-4 mr-1" />
-                  Keep it up! Your streak is intact
+                  Great job! Your streak continues.
                 </div>
               )}
             </div>

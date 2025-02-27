@@ -10,7 +10,7 @@ import { useAddiction } from '@/context/AddictionContext';
 import { ArrowLeft } from "lucide-react";
 
 const Progress = () => {
-  const { addiction, daysSince } = useAddiction();
+  const { addiction, daysSince, setAddiction } = useAddiction();
   const navigate = useNavigate();
   
   // Redirect to home if no addiction selected
@@ -34,6 +34,12 @@ const Progress = () => {
     }
   };
 
+  const handleGoBack = () => {
+    // Reset addiction selection and navigate home
+    setAddiction(null);
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen py-8 px-6">
       <div className="max-w-4xl mx-auto">
@@ -44,7 +50,7 @@ const Progress = () => {
           className="mb-6"
         >
           <button 
-            onClick={() => navigate('/')}
+            onClick={handleGoBack}
             className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={16} className="mr-1" />
