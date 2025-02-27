@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useAddiction } from '@/context/AddictionContext';
 
@@ -13,11 +13,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   showPercentage = true
 }) => {
   const { percentComplete, addiction, daysSince } = useAddiction();
-  const [isVisible, setIsVisible] = useState(false);
   const controls = useAnimation();
 
-  // Get the color based on addiction type
-  const getProgressColor = () => {
+  // Get the color based on addiction type - memoized to prevent recalculation
+  const progressColor = useMemo(() => {
     switch(addiction) {
       case 'smoking':
         return 'bg-progress-smoking';
@@ -28,28 +27,27 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       default:
         return 'bg-primary';
     }
-  };
+  }, [addiction]);
 
   // Calculate minimum width to ensure visibility even for day 1
-  const getProgressWidth = () => {
+  const progressWidth = useMemo(() => {
     // Show at least 3% progress even on day 1
     const minWidth = 3;
     if (daysSince === 0) return 0;
     // Maximum width is 100%
     return Math.min(100, Math.max(minWidth, percentComplete));
-  };
+  }, [daysSince, percentComplete]);
 
   useEffect(() => {
-    setIsVisible(true);
-    
+    // Faster animation duration (1s instead of 1.5s)
     controls.start({
-      width: `${getProgressWidth()}%`,
+      width: `${progressWidth}%`,
       transition: { 
-        duration: 1.5, 
+        duration: 1, 
         ease: [0.34, 1.56, 0.64, 1] 
       }
     });
-  }, [percentComplete, daysSince, controls]);
+  }, [progressWidth, controls]);
 
   return (
     <div className="w-full space-y-2">
@@ -66,17 +64,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       
       <div className="progress-container bg-gray-100 dark:bg-gray-800">
         <motion.div
-          className={`${getProgressColor()} h-full relative`}
+          className={`${progressColor} h-full relative`}
           initial={{ width: "0%" }}
           animate={controls}
         >
-          {/* Shine effect overlay */}
+          {/* Simplified shine effect */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="w-20 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent 
                           transform -skew-x-20 animate-[shine_2s_infinite]" />
           </div>
           
-          {/* Progress reflection */}
           <div className="absolute inset-x-0 top-0 h-1/2 bg-white/20 opacity-50" />
         </motion.div>
       </div>
