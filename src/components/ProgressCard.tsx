@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Gauge, Check, X } from "lucide-react";
@@ -18,8 +18,8 @@ const ProgressCard = () => {
     markNonAddictionForToday
   } = useAddiction();
 
-  // Memoized function to prevent recreation on every render
-  const getAddictionText = useCallback(() => {
+  // Display text based on addiction type
+  const getAddictionText = () => {
     switch(addiction) {
       case 'smoking':
         return 'smoking';
@@ -30,33 +30,26 @@ const ProgressCard = () => {
       default:
         return 'your addiction';
     }
-  }, [addiction]);
+  };
 
-  // Memoized event handlers
-  const handleCheckboxChange = useCallback((checked: boolean) => {
+  const handleCheckboxChange = (checked: boolean) => {
     if (!checkedToday) {
       checkAddictionToday(checked);
     }
-  }, [checkedToday, checkAddictionToday]);
+  };
 
-  const handleNonAddictionClick = useCallback(() => {
+  const handleNonAddictionClick = () => {
     if (!checkedToday) {
       markNonAddictionForToday();
     }
-  }, [checkedToday, markNonAddictionForToday]);
-
-  // Faster animation settings
-  const animationProps = {
-    initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1 },
-    transition: { duration: 0.2 }, // Faster transition
   };
-  
-  // Cached addiction text for better performance
-  const addictionText = getAddictionText();
 
   return (
-    <motion.div {...animationProps}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <Card className="glass-card overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-2xl font-bold">Your Streak</CardTitle>
@@ -67,7 +60,7 @@ const ProgressCard = () => {
               <Calendar className="text-primary h-6 w-6" />
             </div>
             <div>
-              <p className="text-muted-foreground text-sm">Days without {addictionText}</p>
+              <p className="text-muted-foreground text-sm">Days without {getAddictionText()}</p>
               <h2 className="text-3xl font-bold">{daysSince}</h2>
             </div>
           </div>
@@ -97,7 +90,7 @@ const ProgressCard = () => {
                   htmlFor="addiction-today"
                   className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${checkedToday && !hasAddictionToday ? 'opacity-50' : ''}`}
                 >
-                  Yes, I engaged in {addictionText} today
+                  Yes, I engaged in {getAddictionText()} today
                 </label>
               </div>
               
@@ -141,7 +134,7 @@ const ProgressCard = () => {
               className="text-sm text-muted-foreground"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.3 }} // Faster animation
+              transition={{ delay: 0.5, duration: 0.5 }}
             >
               {daysSince === 0 ? (
                 "You're just starting your journey. Stay strong!"

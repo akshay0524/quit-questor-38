@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,8 @@ const Progress = () => {
     }
   }, [addiction, navigate]);
 
-  // Get title based on addiction type - memoized
-  const getTitle = useCallback(() => {
+  // Get title based on addiction type
+  const getTitle = () => {
     switch(addiction) {
       case 'smoking':
         return 'Quit Smoking';
@@ -32,17 +32,12 @@ const Progress = () => {
       default:
         return 'Recovery';
     }
-  }, [addiction]);
+  };
 
-  const handleGoBack = useCallback(() => {
+  const handleGoBack = () => {
     // Reset addiction selection and navigate home
     setAddiction(null);
     navigate('/');
-  }, [setAddiction, navigate]);
-
-  // Faster animation settings
-  const fastAnimation = {
-    duration: 0.2,
   };
 
   return (
@@ -51,7 +46,7 @@ const Progress = () => {
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={fastAnimation}
+          transition={{ duration: 0.3 }}
           className="mb-6"
         >
           <button 
@@ -66,7 +61,7 @@ const Progress = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={fastAnimation}
+          transition={{ duration: 0.4 }}
           className="text-center mb-10"
         >
           <h1 className="text-3xl font-bold tracking-tight mb-2">{getTitle()}</h1>
@@ -78,7 +73,7 @@ const Progress = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={fastAnimation}
+          transition={{ duration: 0.5 }}
           className="mb-8"
         >
           <ProgressBar 
@@ -99,7 +94,7 @@ const Progress = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
           className="mt-12 bg-muted/50 p-6 rounded-lg"
         >
           <h2 className="text-xl font-medium mb-4">Health Benefits</h2>
