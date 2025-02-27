@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import ProgressBar from '@/components/ProgressBar';
 import ProgressCard from '@/components/ProgressCard';
 import MotivationalQuote from '@/components/MotivationalQuote';
@@ -10,7 +10,7 @@ import { useAddiction } from '@/context/AddictionContext';
 import { ArrowLeft } from "lucide-react";
 
 const Progress = () => {
-  const { addiction, daysSince, goalDays } = useAddiction();
+  const { addiction, daysSince } = useAddiction();
   const navigate = useNavigate();
   
   // Redirect to home if no addiction selected
@@ -60,7 +60,7 @@ const Progress = () => {
         >
           <h1 className="text-3xl font-bold tracking-tight mb-2">{getTitle()}</h1>
           <p className="text-muted-foreground">
-            Your journey to a healthier life
+            Your daily streak tracker
           </p>
         </motion.div>
 
@@ -71,8 +71,8 @@ const Progress = () => {
           className="mb-8"
         >
           <ProgressBar 
-            label="Progress towards your goal" 
-            showPercentage={true} 
+            label="Current streak" 
+            showPercentage={false} 
           />
         </motion.div>
 

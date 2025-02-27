@@ -10,8 +10,8 @@ interface AddictionContextType {
   resetProgress: () => void;
   daysSince: number;
   percentComplete: number;
-  goalDays: number;
-  setGoalDays: (days: number) => void;
+  checkAddictionToday: (occurred: boolean) => void;
+  hasAddictionToday: boolean;
 }
 
 const AddictionContext = createContext<AddictionContextType | undefined>(undefined);
@@ -27,10 +27,41 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return saved ? new Date(JSON.parse(saved)) : null;
   });
   
-  const [goalDays, setGoalDays] = useState<number>(() => {
-    const saved = localStorage.getItem('goalDays');
-    return saved ? JSON.parse(saved) : 30;
+  const [hasAddictionToday, setHasAddictionToday] = useState<boolean>(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const saved = localStorage.getItem(`addiction_${today}`);
+    return saved ? JSON.parse(saved) : false;
   });
+
+  useEffect(() => {
+    // Update the addiction status for today when the component mounts
+    const today = new Date().toISOString().split('T')[0];
+    const saved = localStorage.getItem(`addiction_${today}`);
+    setHasAddictionToday(saved ? JSON.parse(saved) : false);
+    
+    // Check at midnight for a new day
+    const checkNewDay = () => {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const saved = localStorage.getItem(`addiction_${today}`);
+      setHasAddictionToday(saved ? JSON.parse(saved) : false);
+    };
+    
+    // Set up an interval to check for a new day
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const timeUntilMidnight = midnight.getTime() - new Date().getTime();
+    
+    const timerId = setTimeout(() => {
+      checkNewDay();
+      // Then set it to check every 24 hours
+      setInterval(checkNewDay, 24 * 60 * 60 * 1000);
+    }, timeUntilMidnight);
+    
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, []);
 
   useEffect(() => {
     if (addiction) {
@@ -47,10 +78,6 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.removeItem('startDate');
     }
   }, [startDate]);
-  
-  useEffect(() => {
-    localStorage.setItem('goalDays', JSON.stringify(goalDays));
-  }, [goalDays]);
 
   const handleSetAddiction = (type: AddictionType) => {
     setAddiction(type);
@@ -63,13 +90,25 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setStartDate(new Date());
   };
 
-  // Calculate days since quitting
+  const checkAddictionToday = (occurred: boolean) => {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(`addiction_${today}`, JSON.stringify(occurred));
+    setHasAddictionToday(occurred);
+    
+    if (occurred) {
+      // Reset the streak since addiction occurred today
+      resetProgress();
+    }
+  };
+
+  // Calculate days since quitting (streak)
   const daysSince = startDate 
     ? Math.floor((new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) 
     : 0;
     
+  // Calculate percent for visual purposes (100% = 30 days, just for visualization)
   const percentComplete = startDate 
-    ? Math.min(100, Math.round((daysSince / goalDays) * 100)) 
+    ? Math.min(100, Math.round((daysSince / 30) * 100)) 
     : 0;
 
   return (
@@ -81,8 +120,8 @@ export const AddictionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetProgress,
         daysSince,
         percentComplete,
-        goalDays,
-        setGoalDays
+        checkAddictionToday,
+        hasAddictionToday
       }}>
       {children}
     </AddictionContext.Provider>

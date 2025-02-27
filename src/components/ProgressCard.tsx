@@ -2,12 +2,19 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Gauge } from "lucide-react";
+import { Calendar, Gauge, Check, X } from "lucide-react";
 import { useAddiction } from '@/context/AddictionContext';
 import { motion } from "framer-motion";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ProgressCard = () => {
-  const { daysSince, goalDays, resetProgress, addiction } = useAddiction();
+  const { 
+    daysSince, 
+    resetProgress, 
+    addiction, 
+    checkAddictionToday, 
+    hasAddictionToday 
+  } = useAddiction();
 
   // Display text based on addiction type
   const getAddictionText = () => {
@@ -23,6 +30,10 @@ const ProgressCard = () => {
     }
   };
 
+  const handleCheckboxChange = (checked: boolean) => {
+    checkAddictionToday(checked);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -31,7 +42,7 @@ const ProgressCard = () => {
     >
       <Card className="glass-card overflow-hidden">
         <CardHeader className="pb-2">
-          <CardTitle className="text-2xl font-bold">Your Progress</CardTitle>
+          <CardTitle className="text-2xl font-bold">Your Streak</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
@@ -49,8 +60,38 @@ const ProgressCard = () => {
               <Gauge className="text-primary h-6 w-6" />
             </div>
             <div>
-              <p className="text-muted-foreground text-sm">Goal progress</p>
-              <h2 className="text-3xl font-bold">{Math.min(daysSince, goalDays)}/{goalDays} days</h2>
+              <p className="text-muted-foreground text-sm">Current streak</p>
+              <h2 className="text-3xl font-bold">{daysSince} days</h2>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4 space-y-2">
+            <p className="font-medium">Did you engage in {getAddictionText()} today?</p>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="addiction-today" 
+                checked={hasAddictionToday}
+                onCheckedChange={handleCheckboxChange}
+              />
+              <label 
+                htmlFor="addiction-today"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Yes, I did
+              </label>
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">
+              {hasAddictionToday ? (
+                <div className="flex items-center text-destructive">
+                  <X className="h-4 w-4 mr-1" />
+                  Your streak has been reset
+                </div>
+              ) : (
+                <div className="flex items-center text-primary">
+                  <Check className="h-4 w-4 mr-1" />
+                  Keep it up! Your streak is intact
+                </div>
+              )}
             </div>
           </div>
 
@@ -83,7 +124,7 @@ const ProgressCard = () => {
             onClick={resetProgress}
             className="w-full opacity-80 hover:opacity-100"
           >
-            Reset Progress
+            Reset Streak
           </Button>
         </CardFooter>
       </Card>

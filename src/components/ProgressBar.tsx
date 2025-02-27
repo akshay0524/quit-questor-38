@@ -12,7 +12,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   label, 
   showPercentage = true
 }) => {
-  const { percentComplete, addiction } = useAddiction();
+  const { percentComplete, addiction, daysSince } = useAddiction();
   const [isVisible, setIsVisible] = useState(false);
   const controls = useAnimation();
 
@@ -47,8 +47,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       {label && (
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium">{label}</span>
-          {showPercentage && (
+          {showPercentage ? (
             <span className="text-sm font-medium">{percentComplete}%</span>
+          ) : (
+            <span className="text-sm font-medium">{daysSince} days</span>
           )}
         </div>
       )}
